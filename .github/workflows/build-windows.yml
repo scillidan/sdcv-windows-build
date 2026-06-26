@@ -1,0 +1,112 @@
+name: Build sdcv Windows Release
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  schedule:
+    # Check upstream for new tags daily at 08:00 UTC
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+    inputs:
+      upstream_tag:
+        description: 'Upstream sdcv tag to build (leave empty for latest)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2 / MinGW64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-glib2
+            mingw-w64-x86_64-readline
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-pcre2
+            mingw-w64-x86_64-gettext
+            git
+            make
+            zip
+
+      - name: Determine upstream tag
+        id: upstream
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.upstream_tag }}" ]; then
+            UPSTREAM_TAG="${{ inputs.upstream_tag }}"
+          else
+            UPSTREAM_TAG=$(git ls-remote --tags https://github.com/Dushistov/sdcv.git \
+              | awk -F/ '{print $3}' \
+              | grep -v '\^{}' \
+              | sort -V \
+              | tail -1)
+          fi
+          echo "UPSTREAM_TAG=$UPSTREAM_TAG" >> $GITHUB_OUTPUT
+          echo "Upstream tag: $UPSTREAM_TAG"
+
+      - name: Check if release already exists
+        id: check_release
+        shell: bash
+        run: |
+          RELEASE_TAG="upstream-${{ steps.upstream.outputs.UPSTREAM_TAG }}"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "EXISTS=true" >> $GITHUB_OUTPUT
+            echo "Release $RELEASE_TAG already exists, will skip."
+          else
+            echo "EXISTS=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build with Makefile
+        if: steps.check_release.outputs.EXISTS == 'false'
+        run: |
+          make CMAKE_BUILD_TYPE=Release ENABLE_NLS=OFF WITH_READLINE=OFF
+
+      - name: Upload build artifact
+        if: always() && steps.check_release.outputs.EXISTS == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdcv-windows-build
+          path: dist/
+
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.EXISTS == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: upstream-${{ steps.upstream.outputs.UPSTREAM_TAG }}
+          name: sdcv Windows Build (${{ steps.upstream.outputs.UPSTREAM_TAG }})
+          body: |
+            🤖 Auto-built from upstream [Dushistov/sdcv](https://github.com/Dushistov/sdcv) tag `${{ steps.upstream.outputs.UPSTREAM_TAG }}`
+
+            ### Installation
+            1. Download and extract `sdcv-windows-x64-*.zip`
+            2. Add the extracted directory to your **PATH**
+            3. Run in CMD / Clink / WezTerm:
+              sdcv --data-dir=C:\path\to\stardict\dic word
+
+            ### Notes
+            - MinGW64 native build — no MSYS2/Cygwin runtime needed
+            - Includes all required DLLs (glib, iconv, pcre2, zlib, etc.)
+            files: dist/sdcv-windows-x64-*.zip
+            env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

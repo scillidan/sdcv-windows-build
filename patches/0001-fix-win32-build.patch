@@ -1,0 +1,61 @@
+From: builder <builder@localhost>
+Date: Thu, 1 Jan 2026 00:00:00 +0000
+Subject: [PATCH] Fix Windows (MinGW) build compatibility
+
+- Disable HAVE_MMAP on _WIN32 in cmake/config.h.cmake
+- Guard #include <unistd.h> with _WIN32 check in stardict_lib.cpp
+  (use <io.h> on Windows)
+- Add #include <locale.h> for Windows in sdcv.cpp
+
+This allows sdcv to compile as a native MinGW executable
+that runs directly in CMD / Clink / WezTerm without MSYS2 runtime.
+---
+ cmake/config.h.cmake    | 4 ++++
+ src/stardict_lib.cpp    | 4 ++++
+ src/sdcv.cpp            | 4 ++++
+ 3 files changed, 12 insertions(+)
+
+diff --git a/cmake/config.h.cmake b/cmake/config.h.cmake
+index 1234567..abcdefg 100644
+--- a/cmake/config.h.cmake
++++ b/cmake/config.h.cmake
+@@ -1,6 +1,10 @@
+ #ifndef CONFIG_H
+ #define CONFIG_H
+
++#ifdef _WIN32
++#undef HAVE_MMAP
++#define HAVE_MMAP 0
++#endif
+ #cmakedefine HAVE_MMAP
+ #cmakedefine HAVE_MMAP
+ #cmakedefine HAVE_SYS_STAT_H
+diff --git a/src/stardict_lib.cpp b/src/stardict_lib.cpp
+index 2345678..bcdefgh 100644
+--- a/src/stardict_lib.cpp
++++ b/src/stardict_lib.cpp
+@@ -1,7 +1,11 @@
+ #include <mapfile.hpp>
++#ifdef _WIN32
++#include <io.h>
++#else
+ #include <unistd.h>
++#endif
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+diff --git a/src/sdcv.cpp b/src/sdcv.cpp
+index 3456789..cdefghi 100644
+--- a/src/sdcv.cpp
++++ b/src/sdcv.cpp
+@@ -1,6 +1,10 @@
+ #include <config.h>
+ #include <glib.h>
++#ifdef _WIN32
++#include <locale.h>
++#endif
+ #include <locale>
+ #include <iostream>
+ #include <fstream>
+--
+2.39.0
