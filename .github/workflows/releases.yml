@@ -1,9 +1,6 @@
 name: Releases
 
 on:
-  push:
-    branches: [master, main]
-    tags: ['v*']
   schedule:
     # Monthly check for new upstream tags
     - cron: '0 8 1 * *'
