@@ -8,8 +8,20 @@ DIST_DIR := dist
 SCRIPTS_DIR := scripts
 PATCHES_DIR := patches
 
-# Scoop MSYS2 root (overridable, for cmake compiler path)
-MSYS2_ROOT ?= C:/Users/User/Scoop/apps/msys2/current
+# MSYS2 root (for cmake compiler path and DLLs)
+# Auto-detect: GitHub Actions runner first, then common local paths
+MSYS2_ROOT ?= $(shell \
+	if [ -n "$$CI" ] && [ -d "C:/msys64" ]; then \
+		echo "C:/msys64"; \
+	elif [ -d "C:/msys64" ]; then \
+		echo "C:/msys64"; \
+	elif [ -d "C:/tools/msys64" ]; then \
+		echo "C:/tools/msys64"; \
+	elif [ -d "C:/msys32" ]; then \
+		echo "C:/msys32"; \
+	else \
+		echo "C:/msys64"; \
+	fi)
 
 # Default values (can be overridden on command line)
 CMAKE_BUILD_TYPE ?= Release
