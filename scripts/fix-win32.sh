@@ -49,4 +49,14 @@ else
 	echo "  -> WARN: $SDCV_CPP not found, skipping"
 fi
 
+# --- Fix 4: stardict_lib.cpp - replace struct ::stat with GStatBuf ---
+if [ -f "$STAR_DICT_LIB" ]; then
+	if grep -q "struct ::stat" "$STAR_DICT_LIB"; then
+		echo "  -> Patching src/stardict_lib.cpp (struct ::stat -> GStatBuf)"
+		sed -i 's|struct ::stat|GStatBuf|g' "$STAR_DICT_LIB"
+	else
+		echo "  -> src/stardict_lib.cpp already uses GStatBuf or no struct ::stat found"
+	fi
+fi
+
 echo "==> All patches applied successfully."
