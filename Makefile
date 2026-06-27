@@ -68,8 +68,6 @@ configure: patch
 		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
 		-DENABLE_NLS=$(ENABLE_NLS) \
 		-DWITH_READLINE=$(WITH_READLINE) \
-		-DCMAKE_C_COMPILER=$(MSYS2_ROOT)/mingw64/bin/gcc.exe \
-		-DCMAKE_CXX_COMPILER=$(MSYS2_ROOT)/mingw64/bin/g++.exe \
 		-DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
 
 # Step 4: Build
