@@ -100,6 +100,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          pacman -S --noconfirm mingw-w64-x86_64-github-cli
           gh release create "upstream-${{ steps.upstream.outputs.tag }}" \
             dist/sdcv-windows-x64-*.zip \
             --title "sdcv Windows Build (${{ steps.upstream.outputs.tag }})" \
