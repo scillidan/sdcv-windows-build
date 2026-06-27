@@ -102,5 +102,4 @@ jobs:
           VERSION="${TAG#v}"
           gh release create "$TAG" \
             dist/sdcv-windows-x64-${VERSION}.zip \
-            --title "$TAG" \
-            --notes " "
+            --title "$TAG"
