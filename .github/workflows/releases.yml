@@ -84,7 +84,7 @@ jobs:
 
       - name: Build with Makefile
         if: steps.check.outputs.skip == 'false' || inputs.dryrun
-        run: make CMAKE_BUILD_TYPE=Release ENABLE_NLS=OFF WITH_READLINE=OFF
+        run: make SDCV_TAG="${{ steps.upstream.outputs.tag }}" CMAKE_BUILD_TYPE=Release ENABLE_NLS=OFF WITH_READLINE=OFF
 
       - name: Upload build artifact
         if: success() && !inputs.dryrun && steps.check.outputs.skip == 'false'

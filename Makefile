@@ -12,6 +12,7 @@ SCRIPTS_DIR := scripts
 CMAKE_BUILD_TYPE ?= Release
 ENABLE_NLS ?= OFF
 WITH_READLINE ?= OFF
+SDCV_TAG ?= 
 
 # Version: lazy (=) so clone runs first, then tag is re-evaluated
 # Use --exact-match to only match exact tag, avoiding commit hash suffix
@@ -36,15 +37,19 @@ clone:
 	fi
 	@echo "==> Fetching upstream tags..."
 	@git -C upstream-src fetch --tags
-	@latest_tag=$$(git -C upstream-src tag --sort=-v:refname | head -1); \
+	@if [ -n "$(SDCV_TAG)" ]; then \
+		latest_tag="$(SDCV_TAG)"; \
+	else \
+		latest_tag=$$(git -C upstream-src tag --sort=-v:refname | head -1); \
+	fi; \
 	current_ref=$$(git -C upstream-src rev-parse HEAD); \
 	tag_ref=$$(git -C upstream-src rev-parse "$$latest_tag" 2>/dev/null); \
 	if [ "$$current_ref" != "$$tag_ref" ]; then \
-		echo "==> Checking out latest tag: $$latest_tag"; \
+		echo "==> Checking out tag: $$latest_tag"; \
 		git -C upstream-src checkout -f "$$latest_tag"; \
 		rm -f .patch-applied; \
 	else \
-		echo "==> Already at latest tag: $$latest_tag"; \
+		echo "==> Already at tag: $$latest_tag"; \
 	fi
 	@echo "==> Upstream version: $$(git -C upstream-src describe --tags --abbrev=0 | sed 's/^v//')"
 
