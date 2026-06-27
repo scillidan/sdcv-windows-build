@@ -75,10 +75,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.upstream.outputs.tag }}"
-          RELEASE_TAG="${TAG#v}"
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+          if gh release view "$TAG" >/dev/null 2>&1; then
             echo "skip=true" >> $GITHUB_OUTPUT
-            echo "Release $RELEASE_TAG already exists, will skip."
+            echo "Release $TAG already exists, will skip."
           else
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
@@ -100,7 +99,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.upstream.outputs.tag }}"
-          VERSION="${TAG#v}"
-          gh release create "$VERSION" \
-            dist/sdcv-windows-x64-${VERSION}.zip \
-            --title "$VERSION"
+          gh release create "$TAG" \
+            dist/sdcv-windows-x64-${TAG#v}.zip \
+            --title "$TAG"
