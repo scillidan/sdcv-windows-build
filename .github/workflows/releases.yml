@@ -1,4 +1,4 @@
-name: Release
+name: Releases
 
 on:
   push:
@@ -23,7 +23,7 @@ permissions:
   contents: write
 
 jobs:
-  build-windows:
+ releases:
     runs-on: windows-latest
 
     defaults:
@@ -50,6 +50,7 @@ jobs:
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-pcre2
             mingw-w64-x86_64-gettext
+            mingw-w64-x86_64-github-cli
             git
             make
             zip
@@ -76,7 +77,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RELEASE_TAG="upstream-${{ steps.upstream.outputs.tag }}"
+          TAG="${{ steps.upstream.outputs.tag }}"
+          RELEASE_TAG="${TAG#v}"
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "Release $RELEASE_TAG already exists, will skip."
@@ -102,6 +104,6 @@ jobs:
         run: |
           TAG="${{ steps.upstream.outputs.tag }}"
           VERSION="${TAG#v}"
-          gh release create "$TAG" \
+          gh release create "$VERSION" \
             dist/sdcv-windows-x64-${VERSION}.zip \
             --title "$VERSION"
