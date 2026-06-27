@@ -96,17 +96,9 @@ jobs:
           tag_name: upstream-${{ steps.upstream.outputs.UPSTREAM_TAG }}
           name: sdcv Windows Build (${{ steps.upstream.outputs.UPSTREAM_TAG }})
           body: |
-            🤖 Auto-built from upstream [Dushistov/sdcv](https://github.com/Dushistov/sdcv) tag `${{ steps.upstream.outputs.UPSTREAM_TAG }}`
+            🤖 Auto-built from upstream [Dushistov/sdcv](https://github.com/Dushistov/sdcv) tag `${{ steps.upstream.outputs.UPSTREAM_TAG }}`.
 
-            ### Installation
-            1. Download and extract `sdcv-windows-x64-*.zip`
-            2. Add the extracted directory to your **PATH**
-            3. Run in CMD / Clink / WezTerm:
-              sdcv --data-dir=C:\path\to\stardict\dic word
-
-            ### Notes
-            - MinGW64 native build — no MSYS2/Cygwin runtime needed
-            - Includes all required DLLs (glib, iconv, pcre2, zlib, etc.)
-            files: dist/sdcv-windows-x64-*.zip
-            env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            See [README.md](https://github.com/${{ github.repository }}#readme) for installation and usage.
+          files: dist/sdcv-windows-x64-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
