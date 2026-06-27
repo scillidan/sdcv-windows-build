@@ -1,26 +1,8 @@
-# sdcv Windows Build
+# sdcv-windows-build
 
-MinGW64 native build of [sdcv](https://github.com/Dushistov/sdcv) — StarDict CLI. Runtime DLLs bundled in zip.
+Native MinGW64 build of [sdcv](https://github.com/Dushistov/sdcv), with runtime DLLs bundled.
 
-## Build
-
-Requires MSYS2 with `mingw-w64-x86_64-{gcc,cmake,glib2,zlib,pcre2,gettext}`, `git`, `make`, `zip`.
-
-```bash
-make dist
-```
-
-Output: `dist/sdcv-windows-x64-vX.Y.Z.zip`
-
-## Install
-
-Extract zip, add folder to PATH, run:
-
-```cmd
-sdcv --data-dir=C:\stardict\dic word
-```
-
-DLLs must stay next to `sdcv.exe`.
+Authors: DeepSeek-V4🧙‍♂️, scillidan🤡
 
 ## Patches
 
@@ -31,6 +13,18 @@ DLLs must stay next to `sdcv.exe`.
 - `g_utf8_next_char` const fix (GLib 2.80+)
 - Force `utf8_output` + `_setmode` for CJK display
 
-## License
+## Build
 
-sdcv: GPLv2 | Build system: MIT
+```cmd
+scoop install msys2
+git clone https://github.com/scillidan/sdcv-windows-build
+cd sdcv-windows-build
+mingw64
+```
+
+```bash
+pacman -S --needed \
+  mingw-w64-x86_64-{gcc,cmake,glib2,zlib,pcre2,gettext} \
+  git make zip
+make dist
+```
