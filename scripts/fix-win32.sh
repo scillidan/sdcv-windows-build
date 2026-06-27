@@ -7,13 +7,15 @@ set -e
 echo "==> Applying Windows compatibility fixes..."
 
 # --- Fix 1: config.h.cmake - disable mmap on Windows ---
-CONFIG_CMAKE="upstream-src/cmake/config.h.cmake"
+# Simply comment out #cmakedefine HAVE_MMAP so CMake generates /* #undef HAVE_MMAP */
+# which means HAVE_MMAP won't be defined -> mapfile.hpp uses Win32 API path
+CONFIG_CMAKE="upstream-src/config.h.cmake"
 if [ -f "$CONFIG_CMAKE" ]; then
-	if ! grep -q "HAVE_MMAP 0" "$CONFIG_CMAKE"; then
-		echo "  -> Patching cmake/config.h.cmake (disable mmap on Windows)"
-		sed -i 's|^#cmakedefine HAVE_MMAP|#cmakedefine HAVE_MMAP\n#ifdef _WIN32\n#undef HAVE_MMAP\n#define HAVE_MMAP 0\n#endif|' "$CONFIG_CMAKE"
+	if grep -q '^#cmakedefine HAVE_MMAP' "$CONFIG_CMAKE"; then
+		echo "  -> Patching config.h.cmake (disable mmap)"
+		sed -i 's|^#cmakedefine HAVE_MMAP|// #cmakedefine HAVE_MMAP (disabled for Win32)|' "$CONFIG_CMAKE"
 	else
-		echo "  -> cmake/config.h.cmake already patched (HAVE_MMAP 0)"
+		echo "  -> config.h.cmake already patched (HAVE_MMAP disabled)"
 	fi
 else
 	echo "  -> WARN: $CONFIG_CMAKE not found, skipping"
@@ -56,6 +58,17 @@ if [ -f "$STAR_DICT_LIB" ]; then
 		sed -i 's|struct ::stat|GStatBuf|g' "$STAR_DICT_LIB"
 	else
 		echo "  -> src/stardict_lib.cpp already uses GStatBuf or no struct ::stat found"
+	fi
+fi
+
+# --- Fix 5: stardict_lib.cpp - fix const correctness for GCC 16 ---
+# g_utf8_next_char returns const gchar* in glib >= 2.84, cast to non-const
+if [ -f "$STAR_DICT_LIB" ]; then
+	if grep -q 'gchar \*nextchar = g_utf8_next_char' "$STAR_DICT_LIB"; then
+		echo "  -> Patching src/stardict_lib.cpp (const-correct g_utf8_next_char)"
+		sed -i 's|gchar \*nextchar = g_utf8_next_char|gchar *nextchar = (gchar *)g_utf8_next_char|' "$STAR_DICT_LIB"
+	else
+		echo "  -> src/stardict_lib.cpp already const-correct for g_utf8_next_char"
 	fi
 fi
 
