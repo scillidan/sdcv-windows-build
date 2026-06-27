@@ -19,7 +19,7 @@ Authors: DeepSeek-V4🧙‍♂️, scillidan🤡
 scoop install msys2
 git clone https://github.com/scillidan/sdcv-windows-build
 cd sdcv-windows-build
-mingw64
+"%SCOOP%\apps\msys2\current\msys2_shell.cmd" -mingw64 -defterm -here -no-start
 ```
 
 ```bash
