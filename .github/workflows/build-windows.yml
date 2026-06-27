@@ -1,4 +1,4 @@
-name: Build sdcv Windows Release
+name: Release
 
 on:
   push:
@@ -100,10 +100,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pacman -S --noconfirm mingw-w64-x86_64-github-cli
-          gh release create "upstream-${{ steps.upstream.outputs.tag }}" \
-            dist/sdcv-windows-x64-*.zip \
-            --title "sdcv Windows Build (${{ steps.upstream.outputs.tag }})" \
-            --notes "🤖 Auto-built from upstream [Dushistov/sdcv](https://github.com/Dushistov/sdcv) tag \`${{ steps.upstream.outputs.tag }}\`.
-
-          See [README.md](https://github.com/${{ github.repository }}#readme) for installation and usage."
+          TAG="${{ steps.upstream.outputs.tag }}"
+          VERSION="${TAG#v}"
+          gh release create "$TAG" \
+            dist/sdcv-windows-x64-${VERSION}.zip \
+            --title "sdcv $VERSION for Windows x64"
