@@ -11,7 +11,7 @@ Authors: DeepSeek-V4🧙‍♂️, scillidan🤡
 - Add `locale.h` for `setlocale()`
 - `struct stat` → `GStatBuf` (GLib on Windows)
 - `g_utf8_next_char` const fix (GLib 2.80+)
-- Force `utf8_output` + `_setmode` for CJK display
+- Sync console output CP + `_O_BINARY` stdout (fix CJK mojibake)
 
 ## Build
 

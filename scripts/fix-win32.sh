@@ -72,4 +72,37 @@ if [ -f "$STAR_DICT_LIB" ]; then
 	fi
 fi
 
+# --- Fix 6: sdcv.cpp - sync console CP and use binary stdout on Windows ---
+# On Windows, setlocale(LC_ALL, "") sets CRT locale but printf of multibyte
+# strings can still produce mojibake if CRT's text-mode translation interferes.
+# Fix: sync console output CP to system ANSI CP, and set stdout to _O_BINARY
+# so CRT writes bytes verbatim without text-mode processing.
+SDCV_CPP="upstream-src/src/sdcv.cpp"
+if [ -f "$SDCV_CPP" ]; then
+	if ! grep -q 'sync_console_cp' "$SDCV_CPP"; then
+		echo "  -> Patching src/sdcv.cpp (sync console CP + binary stdout on Windows)"
+
+		# Add includes
+		sed -i '/^#include <glib\/gstdio.h>$/a\
+\
+#ifdef _WIN32\
+#include <windows.h>\
+#include <fcntl.h>\
+#include <io.h>\
+#endif' "$SDCV_CPP"
+
+		# After setlocale: sync console CP and set stdout to binary mode
+		sed -i '/^    setlocale(LC_ALL, "");$/a\
+#ifdef _WIN32\
+    /* sync_console_cp: ensure console output CP matches CRT locale */\
+    SetConsoleOutputCP(GetACP());\
+    /* binary stdout: prevent CRT from mangling multibyte output */\
+    _setmode(_fileno(stdout), _O_BINARY);\
+    _setmode(_fileno(stderr), _O_BINARY);\
+#endif' "$SDCV_CPP"
+	else
+		echo "  -> src/sdcv.cpp already patched for console CP sync"
+	fi
+fi
+
 echo "==> All patches applied successfully."
