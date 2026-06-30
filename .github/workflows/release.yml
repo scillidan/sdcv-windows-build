@@ -1,4 +1,4 @@
-name: Releases
+name: Release
 
 on:
   schedule:
@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 jobs:
- releases:
+ release:
     runs-on: windows-latest
 
     defaults:
