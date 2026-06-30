@@ -28,3 +28,17 @@ pacman -S --needed \
   git make zip
 make dist
 ```
+
+## Dictionary Search Path Resolution
+
+`sdcv` looks for dictionaries in the following locations, in order of precedence:
+
+| Source                      | Path                                                                         |
+| :-                          | :-                                                                           |
+| `--only-data-dir` (`-x`)    | Use **only** this directory; skip all defaults                               |
+| `--data-dir`                | Append a custom directory to the search list                                 |
+| `STARDICT_DATA_DIR`         | Override the system directory                                                |
+| User directory              | Linux: `~/.stardict/dic` · Windows: `%USERPROFILE%\.stardict\dic`            |
+| System directory (fallback) | Linux: `/usr/share/stardict/dic` · Windows: same (hardcoded, usually absent) |
+
+> **Note:** If `STARDICT_DATA_DIR` points to the same path as your user directory, every dictionary will be loaded twice and lookup results will appear duplicated. Unset the environment variable to resolve this.
